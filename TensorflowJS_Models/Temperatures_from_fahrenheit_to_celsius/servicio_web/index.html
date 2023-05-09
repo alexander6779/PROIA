@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fahrenheit to Celsius</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <style>
+        #resultado {
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <div class="px-4 py-2 my-2 text-center border-bottom">
+            <h1 class="display-5 fw-bold">Fahrenheit a Celsius</h1>
+            <div class="col-lg-6 mx-auto">
+                <p class="lead mb-0">Conversi&oacute;n de grados fahrenheit a celsius utilizando Tensorflow.js</p>
+            </div>
+        </div>
+
+        <div class="b-example-divider"></div>
+
+        <div class="container mt-5">
+            <div class="row">
+                <div class="col-12 col-md-4 offset-md-4">
+                    <form>
+                        <div class="mb-3">
+                            <label for="fahrenheit" class="form-label">Grados Fahrenheit: <span
+                                    id="lbl-fahrenheit">0</span></label>
+                            <input type="range" class="form-range" min="-100" max="100" id="fahrenheit"
+                                oninput="cambiarFahrenheit();">
+                            <div class="form-text">Desliza para cambiar el valor de grados fahrenheit</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="fahrenheit" class="form-label">Resultado</label>
+                            <div id="resultado">
+                                0 grados fahrenheit son -17,77 grados celsius
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="b-example-divider"></div>   
+
+        <div class="b-example-divider mb-0"></div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+
+    <script type="text/javascript">
+
+        let modelo = null;
+
+        //Cargar modelo
+        (async () => {
+            console.log("Cargando modelo...");
+            modelo = await tf.loadLayersModel("model.json");
+            console.log("Modelo cargado...");
+        })();
+        
+        function cambiarFahrenheit() {
+            let fahrenheit = document.getElementById("fahrenheit").value;
+            document.getElementById("lbl-fahrenheit").innerHTML = fahrenheit;
+            if (modelo != null) {
+                let tensor = tf.tensor1d([parseInt(fahrenheit)]);
+                let prediccion = modelo.predict(tensor).dataSync();
+                prediccion = Math.round(prediccion, 1);
+                document.getElementById("resultado").innerHTML = fahrenheit + " fahrenheit son " + prediccion + " Celsius!";
+            } else {
+                document.getElementById("resultado").innerHTML = "Intenta de nuevo en un momento...";
+            }
+        }
+
+    </script>
+</body>
+
+</html>

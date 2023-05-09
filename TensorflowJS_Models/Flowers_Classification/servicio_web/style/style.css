@@ -1,0 +1,23 @@
+.text-col{
+    color:rgba(101, 67, 33, 0.5) ;
+}
+
+.vert-space {
+    padding-top: 3%;
+}
+
+.img-shape {
+    object-fit: cover;
+}
+
+.container-center{
+    margin-top: 4%;
+    display:grid;
+    place-items: center;
+}
+
+
+.result{
+    color:rgba(101, 67, 33, 0.5) ;
+    text-shadow: 2px 2px 4px rgba(101, 67, 33, 0.5);
+}

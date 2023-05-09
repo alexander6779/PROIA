@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flowers Clasification</title>
+    <link href="../flowers_prediction/style/style.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+</head>
+
+<body style="background-color: beige;">
+
+    <div class="container-center text-col  mt-4">
+        <h1><u>Clasificación de flores</u></h1>
+        <h3 class=" mt-4">Tipo de flores (girasoles,rosas,tulipanes,diente de león y margarita)</h3>
+    </div>
+
+    <div class="container-center">
+        <div class="input-group" style="width: 500px;">
+            <input type="file" class="form-control" accept="image/*" id="inputImage">
+        </div>
+        <img id="image" class="img-fluid rounded mt-5">
+        <div id="result" class="vert-space">
+        </div>
+    </div>
+
+
+    <script>
+        let inputImage = document.getElementById('inputImage');
+        let image = document.getElementById('image');
+        let divResult = document.getElementById('result');
+        let modelo = null;
+        let possible_results = ['margarita', 'diente de león', 'rosa', 'girasol', 'tulipán']
+
+        // función para mostrar la predicción
+        function addDom(flor, pred, ind) {
+            divResult.innerHTML = "<h5 class='result'>El resultado predicho es " + flor + " con un " + pred[ind] + "%</h5>";
+        }
+
+        async function guessFlower(file) {
+                // método que se encarga de crear un canvas a partir de la imagen y después generar la 
+                // predicción usando dicho canvas normalizando la imagen e indicándole el shape 64x64 más que están en rgb de ahí el 64x64x3
+                // luego de los 4 valores obtengo el índice del valor mayor y con ese índice indico el tipo de flor
+                if (modelo == null) {
+                    alert('El modelo no se ha cargado correctamente.')
+                    return;
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = 64;
+                canvas.height = 64;
+                const context = canvas.getContext('2d');
+                context.drawImage(file, 0, 0, 64, 64);
+                const imageData = context.getImageData(0, 0, 64, 64);
+                const data = Array.from(imageData.data);
+                const tensor = tf.tensor3d(data, [64, 64, 4]).slice([0, 0, 0], [64, 64, 3]).div(255).expandDims();
+                let prediccion = await modelo.predict(tensor).dataSync();
+                let indicePrediccion = prediccion.indexOf(Math.max(...prediccion));
+                let tipoFlor = possible_results[indicePrediccion];
+                addDom(tipoFlor, prediccion, indicePrediccion)
+            }
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // después de cargar el modelo ejecutará el siguiente código
+
+            (async () => {
+                console.log("Cargando modelo...");
+                modelo = await tf.loadLayersModel("model.json");
+                console.log("Modelo cargado...");
+            })();
+
+            inputImage.addEventListener('change', function () {
+                const archivos = inputImage.files;
+                // Si no hay archivos salimos de la función y quitamos la imagen
+                if (!archivos || !archivos.length) {
+                    image.src = "";
+                    alert('Necesito que subas una imagen de una flor.')
+                    divResult.innerHTML = ''
+                    return;
+                }
+                // Ahora tomamos el primer archivo, el cual vamos a previsualizar
+                const primerArchivo = archivos[0];
+                // Y a la fuente de la imagen le ponemos el objectURL
+                image.src = URL.createObjectURL(primerArchivo);
+
+
+                image.onload = function () {
+                    //después de cargarse la imagen se ejecutará la función y eliminará la url para no sobrecargar memoria
+                    guessFlower(image);
+                    URL.revokeObjectURL(image.src);
+                };
+            });
+
+        });
+
+
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+
+</body>
+
+</html>
